@@ -1,0 +1,123 @@
+git clone https://github.com/LondheShubham153/django-notes-app.git
+sudo apt-get update
+sudo apt install docker.io
+{
+docker ubuntu user permission
+=====>>>   sudo usermod -aG docker $USER
+		   sudo reboot }
+docker build -t notes-app .
+sudo apt update
+sudo apt install openjdk-11-jre
+java -version
+curl -fsSL https://pkg.jenkins.io/debian/jenkins.io.key | sudo tee \   /usr/share/keyrings/jenkins-keyring.asc > /dev/null 
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \   https://pkg.jenkins.io/debian binary/ | sudo tee \   /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update 
+sudo apt-get install jenkins
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+[[[[sudo usermod -aG docker jenkins]]sudo reboot]]
+[ open jenkins -
+	job- pipeline
+	github
+	git
+++++++++++++
+credentials--- user name and password
+			    id -- dockerHub
+				username and password
+				save
+++++++++++++
+docker login 
+++++++++++++
+script---
+1.
+
+pipeline {
+	agent any
+	
+	stages{
+		stage("code"){
+			steps {
+				echo "cloning the code"
+				git url:"https://github.com/LondheShubham153/django-notes-app.git",branch: "main"
+			}
+		}
+		stage("build"){
+			steps {
+				echo "building the code"
+				
+				sh "docker build -t mynode-app ."
+			}
+		}
+		stage("push to Docker Hub"){
+			steps {
+				echo "pushing the image in docker hub"
+				withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]{
+				sh "docker tag my-node-app ${env.dockerHubUser}/my-node-app:latest"
+				sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+				sh "docker push ${env.dockerHubUser}/my-node-app:latest"
+				}
+			}
+		}
+		stage("Deploy"){
+			steps {
+				echo "deploying the container"
+				sh "docker run -d -p 8000:8000 trainwithshubham/my-node-app:latest"
+			}
+		}
+	}
+}
+
+----------------------------------------------------------------
+docker compose --
+[[[[[if port busy then DC create new port.]]
+sudo apt-get install docker-compose
+docker-compose up -d
+docker kill idofoldcontainer
+docker-compose down
+++++++++++++++
+pipeline {
+	agent any
+	
+	stages{
+		stage("code"){
+			steps {
+				echo "cloning the code"
+				git url:"https://github.com/LondheShubham153/django-notes-app.git",branch: "main"
+			}
+		}
+		stage("build"){
+			steps {
+				echo "building the code"
+				
+				sh "docker build -t mynode-app ."
+			}
+		}
+		stage("push to Docker Hub"){
+			steps {
+				echo "pushing the image in docker hub"
+				withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]{
+				sh "docker tag my-node-app ${env.dockerHubUser}/my-node-app:latest"
+				sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+				sh "docker push ${env.dockerHubUser}/my-node-app:latest"
+				}
+			}
+		}
+		stage("Deploy"){
+			steps {
+				echo "deploying the container"
+				sh "docker-compose down && docker-compose up -d"
+			}
+		}
+	}
+}
++++++++++++
+if add image in docker-compose file
+edit docker-composefile -- 
+	web:
+	  image: copy image name from docker hub
++++++++++++	  
+with code scm
++++++++++++
+webhook
+settings-webhooks-add webhooks-payload url-jenkins url/git-webhook/
+send me everything -save
